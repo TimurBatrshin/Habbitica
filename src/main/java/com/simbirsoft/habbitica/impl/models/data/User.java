@@ -24,6 +24,7 @@ public class User {
     private String email;
     private String username;
     private String hashPassword;
+    private Long balance;
 
     @ManyToMany
     @JoinTable(joinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"),
