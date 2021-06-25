@@ -10,4 +10,6 @@ public interface TaskService {
     Task save(Task task);
 
     List<TaskDTO> findAll();
+
+    TaskDTO findById(Long id);
 }
