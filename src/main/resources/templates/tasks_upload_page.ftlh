@@ -10,9 +10,9 @@
 <@spring.bind "taskForm"/>
 <form action="/tasks/add" method="post">
     <#--    <input type='hidden' value='${_csrf.token}' name='${_csrf.parameterName}'/>-->
-    <@spring.formTextarea "taskForm.title"/>
-    <@spring.formTextarea "taskForm.description"/>
-    <@spring.formTextarea "taskForm.reward"/>
+    <@spring.formTextarea "taskForm.title" 'placeholder="title"'/>
+    <@spring.formTextarea "taskForm.description" 'placeholder="description"'/>
+    <@spring.formTextarea "taskForm.reward" 'placeholder="reward"'/>
     <input type="submit" value="Enter">
 </form>
 </body>

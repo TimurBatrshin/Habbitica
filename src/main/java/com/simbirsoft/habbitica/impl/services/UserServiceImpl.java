@@ -12,6 +12,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import static com.simbirsoft.habbitica.impl.models.dto.UserDto.from;
 
 @Service
@@ -67,5 +71,30 @@ public class UserServiceImpl implements UserService {
         user.getTasks().removeIf(x -> x.getId().equals(taskId));
         user.increaseBalance(task.getReward());
         userRepository.save(user);
+    }
+
+    @Override
+    public List<UserDto> findAllByUser(Long id) {
+        return from(userRepository.findAllByUser(id));
+    }
+
+    @Override
+    public List<UserDto> findSubscription(Long user_id) {
+        return from(userRepository.findSubscription(user_id));
+    }
+
+    @Override
+    public User findById(Long user_id) {
+        return userRepository.findById(user_id).orElseThrow(IllegalStateException::new);
+    }
+
+    @Override
+    public void addUser(Long user_id, Long id) {
+        Optional<User> user1 = userRepository.findById(user_id);
+        Optional<User> user = userRepository.findById(id);
+        Set<User> users = user.get().getSubscriptions();
+        users.add(user1.get());
+        user.get().setSubscriptions(users);
+        userRepository.save(user.get());
     }
 }
