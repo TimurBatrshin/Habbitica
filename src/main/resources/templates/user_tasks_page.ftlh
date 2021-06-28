@@ -22,5 +22,8 @@
         </p>
     </form>
 </#list>
+<h1>
+    <p><a href="/tasks">Другие задачи</a></p>
+</h1>
 </body>
 </html>

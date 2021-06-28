@@ -2,7 +2,7 @@ package com.simbirsoft.habbitica.impl.models.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -14,7 +14,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
+@Data
 @Table(name = "account")
 public class User {
 
@@ -28,8 +28,8 @@ public class User {
     @Builder.Default
     private Long balance = 0L;
 
-    @Transient
     @Builder.Default
+    @ManyToMany(mappedBy = "users")
     private Set<Task> tasks = new HashSet<>();
 
     @ManyToMany
@@ -43,6 +43,22 @@ public class User {
             joinColumns = @JoinColumn(name="user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name="subscriber_id", referencedColumnName = "id"))
     private Set<User> subscriptions;
+
+    public enum Role {
+        ADMIN, USER
+    }
+
+    @Builder.Default
+    @Enumerated(value = EnumType.STRING)
+    private Role role = Role.USER;
+
+    public enum State {
+        NOT_CONFIRMED, ACTIVE, BANNED
+    }
+
+    @Builder.Default
+    @Enumerated(value = EnumType.STRING)
+    private State state = State.NOT_CONFIRMED;
 
     @Override
     public int hashCode() {
@@ -60,7 +76,18 @@ public class User {
     }
 
     public void increaseBalance(Long value) {
-
         balance += value;
+    }
+
+    public boolean isActive() {
+        return this.state == State.ACTIVE;
+    }
+
+    public boolean isBanned() {
+        return this.state == State.BANNED;
+    }
+
+    public boolean isConfirmed() {
+        return this.state == State.NOT_CONFIRMED;
     }
 }

@@ -2,9 +2,11 @@ package com.simbirsoft.habbitica.impl.security.details;
 
 import com.simbirsoft.habbitica.impl.models.data.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class UserDetailsImpl implements UserDetails {
 
@@ -15,7 +17,11 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+
+        SimpleGrantedAuthority authority =
+                new SimpleGrantedAuthority(String.valueOf(user.getRole()));
+
+        return Collections.singleton(authority);
     }
 
     public String getPassword() {
@@ -31,7 +37,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public boolean isAccountNonLocked() {
-        return true;
+        return user.isActive();
     }
 
     public boolean isCredentialsNonExpired() {
@@ -39,7 +45,7 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public boolean isEnabled() {
-        return true;
+        return user.isActive();
     }
 
     public User getUser() {

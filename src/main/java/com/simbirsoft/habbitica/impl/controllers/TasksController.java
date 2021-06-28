@@ -32,9 +32,12 @@ public class TasksController {
     }
 
     @GetMapping("/tasks")
-    public String getTasksPage(Model model) {
+    public String getTasksPage(@AuthenticationPrincipal UserDetailsImpl usr, Model model) {
 
         List<TaskDTO> tasks = taskService.findAll();
+        User user = usr.getUser();
+        //0 - admin, 1 - user
+        model.addAttribute("authority", user.getRole().equals(User.Role.ADMIN) ? 0 : 1);
         model.addAttribute("tasks", tasks);
 
         return "tasks_page";

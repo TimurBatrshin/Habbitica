@@ -7,6 +7,7 @@
 </head>
 <body>
 <h1>Tasks</h1>
+<p><a href="/profile">Профиль</a></p>
 <@spring.bind "taskForm"/>
 <form action="/tasks/add" method="post">
     <#--    <input type='hidden' value='${_csrf.token}' name='${_csrf.parameterName}'/>-->

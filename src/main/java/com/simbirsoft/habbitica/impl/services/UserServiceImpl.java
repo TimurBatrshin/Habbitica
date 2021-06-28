@@ -1,8 +1,11 @@
 package com.simbirsoft.habbitica.impl.services;
 
+import com.simbirsoft.habbitica.api.repositories.ConfirmUserRepository;
 import com.simbirsoft.habbitica.api.repositories.TaskRepository;
 import com.simbirsoft.habbitica.api.repositories.UserRepository;
+import com.simbirsoft.habbitica.api.services.MailService;
 import com.simbirsoft.habbitica.api.services.UserService;
+import com.simbirsoft.habbitica.impl.models.data.ConfirmUser;
 import com.simbirsoft.habbitica.impl.models.data.Task;
 import com.simbirsoft.habbitica.impl.models.data.User;
 import com.simbirsoft.habbitica.impl.models.dto.UserDto;
@@ -12,6 +15,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
+
 import static com.simbirsoft.habbitica.impl.models.dto.UserDto.from;
 
 @Service
@@ -19,14 +27,23 @@ public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
     private TaskRepository taskRepository;
+    private ConfirmUserRepository confirmUserRepository;
     private PasswordEncoder passwordEncoder;
+    private ExecutorService executorService;
+    private MailService mailService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            TaskRepository taskRepository,
+                           ConfirmUserRepository confirmUserRepository,
+                           ExecutorService executorService,
+                           MailService mailService,
                            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
+        this.confirmUserRepository = confirmUserRepository;
+        this.executorService = executorService;
+        this.mailService = mailService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -39,6 +56,15 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         userRepository.save(user);
+        String code = UUID.randomUUID().toString();
+
+        confirmUserRepository.save(ConfirmUser
+                .builder()
+                .token(code)
+                .user(user)
+                .build());
+
+        executorService.submit(() -> mailService.sendEmail(user.getEmail(), code));
 
         return from(user);
     }
@@ -55,8 +81,18 @@ public class UserServiceImpl implements UserService {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new UsernameNotFoundException("Task not found"));
-        user.getTasks().add(task);
-        userRepository.save(user);
+        Set<Long> userSet = task.getUsers().stream().map(User::getId).collect(Collectors.toSet());
+        Set<Long> taskSet = user.getTasks().stream().map(Task::getId).collect(Collectors.toSet());
+
+        if (!userSet.contains(user.getId())) {
+            task.getUsers().add(user);
+            taskRepository.save(task);
+        }
+
+        if (!taskSet.contains(taskId)) {
+            user.getTasks().add(task);
+            userRepository.save(user);
+        }
     }
 
     @Override
@@ -65,7 +101,9 @@ public class UserServiceImpl implements UserService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new UsernameNotFoundException("Task not found"));
         user.getTasks().removeIf(x -> x.getId().equals(taskId));
+        task.getUsers().removeIf(x -> x.getId().equals(user.getId()));
         user.increaseBalance(task.getReward());
+        taskRepository.save(task);
         userRepository.save(user);
     }
 }

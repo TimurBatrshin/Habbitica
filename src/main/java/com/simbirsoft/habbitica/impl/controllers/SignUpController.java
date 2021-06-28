@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 @Controller
 public class SignUpController {
@@ -35,6 +36,12 @@ public class SignUpController {
                          Model model) {
 
         if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().stream().anyMatch(error -> {
+                if (Objects.requireNonNull(error.getCodes())[0].equals("userForm.ValidNames")) {
+                    model.addAttribute("namesErrorMessage", error.getDefaultMessage());
+                }
+                return true;
+            });
             model.addAttribute("userForm", form);
         } else {
             userService.save(form);

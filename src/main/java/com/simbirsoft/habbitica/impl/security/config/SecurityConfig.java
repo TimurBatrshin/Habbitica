@@ -29,7 +29,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.httpBasic().disable();
         http.csrf().disable();
         http.authorizeRequests()
-                .anyRequest().permitAll()
+                .antMatchers("/signUp").permitAll()
+                .antMatchers("/signIn").permitAll()
+                .antMatchers("/confirm/**").permitAll()
+                .antMatchers("/tasks/add").hasAuthority("ADMIN")
+                .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/signIn")
