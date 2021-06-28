@@ -9,5 +9,4 @@ class HabbiticaApplicationTests {
     @Test
     void contextLoads() {
     }
-
 }

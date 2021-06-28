@@ -9,12 +9,16 @@
     <#--    <input type='hidden' value='${_csrf.token}' name='${_csrf.parameterName}'/>-->
     <div class="container">
         <p>Please fill in this form to create an account</p>
+
         <label>Email</label>
         <@spring.formInput "userForm.email"/>
+
         <label>Password</label>
         <@spring.formPasswordInput "userForm.password"/>
+
         <label>Username</label>
         <@spring.formInput "userForm.username"/>
+
         <input type="submit" value="Enter">
     </div>
     <div class="container signin">
