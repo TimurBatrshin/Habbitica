@@ -109,7 +109,9 @@ public class UserServiceImpl implements UserService {
 
         if (!taskSet.contains(taskId)) {
             user.getTasks().add(task);
-            user.getTasksDoneCount().put(taskId, 0);
+            if (!user.getTasksDoneCount().containsKey(taskId)) {
+                user.getTasksDoneCount().put(taskId, 0);
+            }
             userRepository.save(user);
         }
     }

@@ -8,7 +8,9 @@ import com.simbirsoft.habbitica.impl.models.dto.TaskDTO;
 import com.simbirsoft.habbitica.impl.models.form.TaskForm;
 import com.simbirsoft.habbitica.impl.security.details.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,13 +24,16 @@ import java.util.List;
 public class TasksController {
 
     private TaskService taskService;
+    private UserDetailsService userDetailsService;
     private UserService userService;
 
     @Autowired
     public TasksController(TaskService taskService,
-                           UserService userService) {
+                           UserService userService,
+                           @Qualifier("customUserDetailsService") UserDetailsService userDetailsService) {
         this.taskService = taskService;
         this.userService = userService;
+        this.userDetailsService = userDetailsService;
     }
 
     @GetMapping("/tasks")
@@ -69,6 +74,7 @@ public class TasksController {
     public String takeTask(@AuthenticationPrincipal UserDetailsImpl userDetails,
                            @PathVariable("task-id") Long id){
 
+        userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(userDetails.getUsername());
         User user = userDetails.getUser();
         userService.takeTask(id, user);
 
