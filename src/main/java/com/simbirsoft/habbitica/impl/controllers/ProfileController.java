@@ -6,10 +6,12 @@ import com.simbirsoft.habbitica.api.services.UserService;
 import com.simbirsoft.habbitica.impl.models.data.User;
 import com.simbirsoft.habbitica.impl.security.details.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,14 +24,19 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProfileController {
 
     private AchievementService achievementService;
+    private UserDetailsService userDetailsService;
     private UserService userService;
     private TaskService taskService;
 
     @Autowired
-    public ProfileController(UserService userService, TaskService taskService, AchievementService achievementService) {
+    public ProfileController(UserService userService,
+                             TaskService taskService,
+                             AchievementService achievementService,
+                             @Qualifier("customUserDetailsService") UserDetailsService userDetailsService) {
         this.userService = userService;
         this.taskService = taskService;
         this.achievementService = achievementService;
+        this.userDetailsService = userDetailsService;
     }
 
     @GetMapping("/profile")
@@ -49,6 +56,7 @@ public class ProfileController {
     public String getUserTasksPage(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                    Model model) {
 
+        userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(userDetails.getUsername());
         model.addAttribute("tasks", userDetails.getUser().getTasks());
 
         return "user_tasks_page";
@@ -67,6 +75,7 @@ public class ProfileController {
     public String completeTask(@PathVariable("task-id") Long id,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
+        userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(userDetails.getUsername());
         User user = userDetails.getUser();
         userService.removeTask(id, user);
 
