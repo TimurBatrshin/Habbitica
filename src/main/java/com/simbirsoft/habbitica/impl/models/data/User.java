@@ -6,9 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 @Entity
@@ -17,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Data
 @Table(name = "account")
-public class User implements Serializable {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,11 +27,17 @@ public class User implements Serializable {
     @Builder.Default
     private Long balance = 0L;
 
-    private String path;
-
     @Builder.Default
     @ManyToMany(mappedBy = "users")
     private Set<Task> tasks = new HashSet<>();
+
+    @Column
+    @ElementCollection(targetClass=Integer.class)
+    private Map<Long, Integer> tasksDoneCount = new HashMap<>();
+
+    @Builder.Default
+    @ManyToMany(mappedBy = "users")
+    private List<Achievement> achievements = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(name="subscription",
