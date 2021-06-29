@@ -11,10 +11,16 @@ import com.simbirsoft.habbitica.impl.models.data.User;
 import com.simbirsoft.habbitica.impl.models.dto.UserDto;
 import com.simbirsoft.habbitica.impl.models.form.UserForm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -31,6 +37,12 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     private ExecutorService executorService;
     private MailService mailService;
+
+    @Value("${images.path}")
+    private String path;
+
+    @Value("${images.default}")
+    private String defaultImage;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
@@ -53,6 +65,7 @@ public class UserServiceImpl implements UserService {
                 .email(userForm.getEmail())
                 .hashPassword(passwordEncoder.encode(userForm.getPassword()))
                 .username(userForm.getUsername())
+                .path(path + defaultImage)
                 .build();
 
         userRepository.save(user);
@@ -104,6 +117,31 @@ public class UserServiceImpl implements UserService {
         task.getUsers().removeIf(x -> x.getId().equals(user.getId()));
         user.increaseBalance(task.getReward());
         taskRepository.save(task);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changeData(User user, MultipartFile file, String newName) {
+
+        String fileName = UUID.randomUUID().toString() + ".jpg";
+        String dir = System.getProperty("user.dir") + path;
+        File imageFile = new File(dir + fileName);
+        try {
+            OutputStream os = new FileOutputStream(imageFile);
+            os.write(file.getBytes());
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+
+        if (newName.length() < 1) {
+            newName = user.getUsername();
+        }
+
+        if (!user.getUsername().equals(newName)) {
+            user.setUsername(newName);
+        }
+
+        user.setPath(path + fileName);
         userRepository.save(user);
     }
 }
