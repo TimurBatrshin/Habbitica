@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.*;
 
 
@@ -15,7 +18,7 @@ import java.util.*;
 @NoArgsConstructor
 @Data
 @Table(name = "account")
-public class User {
+public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +29,8 @@ public class User {
     private String hashPassword;
     @Builder.Default
     private Long balance = 0L;
+    
+    private String path;
 
     @Builder.Default
     @ManyToMany(mappedBy = "users")
