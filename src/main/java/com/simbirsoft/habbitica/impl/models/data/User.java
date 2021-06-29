@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.*;
 
 
 @Entity
@@ -28,12 +29,20 @@ public class User implements Serializable {
     private String hashPassword;
     @Builder.Default
     private Long balance = 0L;
-
+    
     private String path;
 
     @Builder.Default
     @ManyToMany(mappedBy = "users")
     private Set<Task> tasks = new HashSet<>();
+
+    @Column
+    @ElementCollection(targetClass=Integer.class)
+    private Map<Long, Integer> tasksDoneCount = new HashMap<>();
+
+    @Builder.Default
+    @ManyToMany(mappedBy = "users")
+    private List<Achievement> achievements = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(name="subscription",

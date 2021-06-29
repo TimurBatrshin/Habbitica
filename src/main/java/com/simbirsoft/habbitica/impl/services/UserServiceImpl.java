@@ -1,10 +1,12 @@
 package com.simbirsoft.habbitica.impl.services;
 
+import com.simbirsoft.habbitica.api.repositories.AchievementRepository;
 import com.simbirsoft.habbitica.api.repositories.ConfirmUserRepository;
 import com.simbirsoft.habbitica.api.repositories.TaskRepository;
 import com.simbirsoft.habbitica.api.repositories.UserRepository;
 import com.simbirsoft.habbitica.api.services.MailService;
 import com.simbirsoft.habbitica.api.services.UserService;
+import com.simbirsoft.habbitica.impl.models.data.Achievement;
 import com.simbirsoft.habbitica.impl.models.data.ConfirmUser;
 import com.simbirsoft.habbitica.impl.models.data.Task;
 import com.simbirsoft.habbitica.impl.models.data.User;
@@ -31,13 +33,14 @@ import static com.simbirsoft.habbitica.impl.models.dto.UserDto.from;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private AchievementRepository achievementRepository;
     private UserRepository userRepository;
     private TaskRepository taskRepository;
     private ConfirmUserRepository confirmUserRepository;
     private PasswordEncoder passwordEncoder;
     private ExecutorService executorService;
     private MailService mailService;
-
+    
     @Value("${images.path}")
     private String path;
 
@@ -45,12 +48,14 @@ public class UserServiceImpl implements UserService {
     private String defaultImage;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository,
+    public UserServiceImpl(AchievementRepository achievementRepository,
+                           UserRepository userRepository,
                            TaskRepository taskRepository,
                            ConfirmUserRepository confirmUserRepository,
                            ExecutorService executorService,
                            MailService mailService,
                            PasswordEncoder passwordEncoder) {
+        this.achievementRepository = achievementRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.confirmUserRepository = confirmUserRepository;
@@ -104,6 +109,7 @@ public class UserServiceImpl implements UserService {
 
         if (!taskSet.contains(taskId)) {
             user.getTasks().add(task);
+            user.getTasksDoneCount().put(taskId, 0);
             userRepository.save(user);
         }
     }
@@ -113,13 +119,22 @@ public class UserServiceImpl implements UserService {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new UsernameNotFoundException("Task not found"));
+        int tasksDone = user.getTasksDoneCount().get(taskId);
+        tasksDone++;
+        user.getTasksDoneCount().put(taskId, tasksDone);
+        Achievement achievement = achievementRepository.findByTaskIdAndCount(taskId, tasksDone)
+                .orElse(null);
+        if (achievement != null) {
+            user.getAchievements().add(achievement);
+            achievement.getUsers().add(user);
+        }
         user.getTasks().removeIf(x -> x.getId().equals(taskId));
         task.getUsers().removeIf(x -> x.getId().equals(user.getId()));
         user.increaseBalance(task.getReward());
         taskRepository.save(task);
         userRepository.save(user);
     }
-
+    
     @Override
     public void changeData(User user, MultipartFile file, String newName) {
 

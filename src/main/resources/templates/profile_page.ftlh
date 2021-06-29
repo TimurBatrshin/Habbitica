@@ -16,5 +16,8 @@
 <div class="container refactor">
     <p><a href="/profile/settings" title="Редактировать">Редактировать</a>.</p>
 </div>
+<div class="container my_achievements">
+    <p><a href="/profile/achievements" title="Мои достижения">Мои достижения</a>.</p>
+</div>
 </body>
 </html>

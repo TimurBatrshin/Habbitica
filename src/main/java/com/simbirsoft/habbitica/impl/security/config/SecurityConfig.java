@@ -35,6 +35,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/signIn").permitAll()
                 .antMatchers("/confirm/**").permitAll()
                 .antMatchers("/tasks/add").hasAuthority("ADMIN")
+                .antMatchers("/achievements/add").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()

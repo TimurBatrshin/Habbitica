@@ -1,5 +1,6 @@
 package com.simbirsoft.habbitica.impl.services;
 
+import com.simbirsoft.habbitica.api.repositories.AchievementRepository;
 import com.simbirsoft.habbitica.api.repositories.TaskRepository;
 import com.simbirsoft.habbitica.api.repositories.UserRepository;
 import com.simbirsoft.habbitica.api.services.TaskService;
@@ -16,12 +17,15 @@ import static com.simbirsoft.habbitica.impl.models.dto.TaskDTO.from;
 @Service
 public class TaskServiceImpl implements TaskService {
 
+    private AchievementRepository achievementRepository;
     private TaskRepository taskRepository;
     private UserRepository userRepository;
 
     @Autowired
-    public TaskServiceImpl(TaskRepository taskRepository,
+    public TaskServiceImpl(AchievementRepository achievementRepository,
+                           TaskRepository taskRepository,
                            UserRepository userRepository) {
+        this.achievementRepository = achievementRepository;
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
     }
