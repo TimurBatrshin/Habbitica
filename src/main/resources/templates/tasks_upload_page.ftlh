@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+<#include "base.ftlh">
 <#import "spring.ftl" as spring>
-<head>
-    <meta charset="UTF-8">
-    <title>Tasks</title>
-</head>
-<body>
+<#macro title>Task</#macro>
+<#macro content>
 <h1>Tasks</h1>
 <p><a href="/profile">Профиль</a></p>
 <@spring.bind "taskForm"/>
@@ -16,5 +12,4 @@
     <@spring.formTextarea "taskForm.reward"/>
     <input type="submit" value="Enter">
 </form>
-</body>
-</html>
+</#macro>
